@@ -52,11 +52,6 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("""
-        <p style="font-size:10px; margin:0;"><i>Este programa fue desarrollado por:</i></p>
-        <p style="font-size:10px; margin:0;"><b>Daniel Cortázar Triana</b></p>
-        <p style="font-size:10px; margin:0;"><b>El Chorro Producciones SAS</b></p>
-    """, unsafe_allow_html=True)
     st.header("ℹ️ Instrucciones")
     st.markdown("""    
     1. **Selecciona los filtros** que deseas aplicar.
@@ -384,6 +379,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
