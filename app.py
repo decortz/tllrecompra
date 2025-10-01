@@ -6,7 +6,7 @@ import io
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Análisis de Recompra de Clientes",
+    page_title="Tasa Recompra TLL",
     page_icon="📊",
     layout="wide"
 )
@@ -45,10 +45,6 @@ st.markdown(f"""
          alt="Logo" style="height:50px;">
 </div>
 """, unsafe_allow_html=True)
-
-# Título principal
-st.title("📊 Análisis de Recompra de Clientes")
-st.markdown("---")
 
 # Sidebar para instrucciones
 with st.sidebar:
@@ -396,6 +392,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
