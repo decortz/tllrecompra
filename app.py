@@ -35,10 +35,10 @@ st.markdown("---")
 # Sidebar para instrucciones
 with st.sidebar:
     st.markdown("""
-    *Este programa fue desarrollado por:*
-    **Daniel Cortázar Triana**
-    **El Chorro Producciones SAS**
-    """)
+        <p style="font-size:10px;"><i>Este programa fue desarrollado por:</i></p>
+        <p style="font-size:10px;"><b>Daniel Cortázar Triana</b></p>
+        <p style="font-size:10px;"><b>El Chorro Producciones SAS</b></p>
+    """, unsafe_allow_html=True)
     st.header("ℹ️ Instrucciones")
     st.markdown("""    
     1. **Selecciona los filtros** que deseas aplicar.
@@ -366,4 +366,5 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
