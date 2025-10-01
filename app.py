@@ -34,6 +34,24 @@ st.markdown("---")
 
 # Sidebar para instrucciones
 with st.sidebar:
+    # Marca de registro del programa
+    import streamlit as st
+    # URL del logo
+    logo_url = "https://elchorro.com.co/wp-content/uploads/2025/04/ch-plano.png?w=106&h=106"
+    # Crear dos columnas: una para el logo, otra para el texto
+    col_logo, col_texto = st.columns([1, 3], vertical_alignment="center")
+    with col_logo:
+        st.image(logo_url, width=60)  # ajusta el tamaño del logo
+    with col_texto:
+        # estilo de los textos con HTML + CSS inline
+        st.markdown("""
+            <div style="font-size:10px; line-height:1.1;">
+                <span style="font-style:italic;">Este programa fue desarrollado por:</span><br>
+                <span style="font-weight:bold;">Daniel Cortázar Triana</span><br>
+                <span style="font-weight:bold;">El Chorro Producciones SAS</span>
+            </div>
+        """, unsafe_allow_html=True)
+    
     st.markdown("""
         <p style="font-size:10px; margin:0;"><i>Este programa fue desarrollado por:</i></p>
         <p style="font-size:10px; margin:0;"><b>Daniel Cortázar Triana</b></p>
@@ -366,6 +384,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
