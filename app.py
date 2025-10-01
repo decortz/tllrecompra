@@ -38,13 +38,15 @@ st.markdown(f"""
     border-radius: 10px;
     padding: 15px;
 ">
-    <h1 style="color: white; margin: 0; font-size: 28px;">
+    <h1 style="color: white; margin: 0; font-size: 30px;">
         📊 Análisis de Recompra de Clientes
     </h1>
     <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif" 
          alt="Logo" style="height:50px;">
 </div>
 """, unsafe_allow_html=True)
+# Línea separadora
+st.markdown("---")
 
 # Sidebar para instrucciones
 with st.sidebar:
@@ -392,6 +394,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
