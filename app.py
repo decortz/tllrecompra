@@ -101,7 +101,7 @@ with col2:
     )
 
 with col3:
-    st.subheader("🛞 Familia")
+    st.subheader("🛞 Producto")
     valores_familia = ['Todos'] + sorted(df[columna_familia].dropna().unique().tolist())
     filtro_familia = st.multiselect(
         "Selecciona familia(s):",
@@ -359,4 +359,5 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
                     mime="text/csv"
                 )
             
+
             st.success("✅ Análisis completado exitosamente!")
