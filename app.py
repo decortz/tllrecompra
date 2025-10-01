@@ -28,24 +28,46 @@ def cargar_datos_desde_drive(file_id):
     except Exception as e:
         return None, str(e)
 
-# Contenedor con título y logo
-st.markdown(f"""
-<div style="
+# Contenedor con título y logo (responsive con CSS)
+st.markdown("""
+<style>
+.header-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #272F59;
     border-radius: 10px;
     padding: 15px;
-">
-    <h1 style="color: white; margin: 0; font-size: 30px;">
-        📊 Análisis de Recompra de Clientes
-    </h1>
-    <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif" 
-         alt="Logo" style="height:50px;">
+    flex-wrap: wrap; /* permite que el logo baje en pantallas pequeñas */
+}
+.header-box h1 {
+    color: white;
+    margin: 0;
+    font-size: 24px;
+}
+.header-box img {
+    height: 50px;
+    margin-top: 10px;
+}
+
+/* 📱 Ajustes especiales para móviles */
+@media (max-width: 600px) {
+    .header-box {
+        flex-direction: column;
+        text-align: center;
+    }
+    .header-box img {
+        margin-top: 10px;
+    }
+}
+</style>
+
+<div class="header-box">
+    <h1>📊 Análisis de Recompra de Clientes</h1>
+    <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif">
 </div>
 """, unsafe_allow_html=True)
-# Línea separadora
+
 st.markdown("---")
 
 # Sidebar para instrucciones
@@ -394,6 +416,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
