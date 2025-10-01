@@ -32,39 +32,34 @@ def cargar_datos_desde_drive(file_id):
 st.markdown("""
 <style>
 .header-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     background-color: #272F59;
     border-radius: 10px;
     padding: 15px;
-    flex-wrap: wrap; /* permite que el logo baje en pantallas pequeñas */
+    text-align: center;
 }
 .header-box h1 {
     color: white;
     margin: 0;
-    font-size: 24px;
+    font-size: 22px;
 }
 .header-box img {
-    height: 50px;
+    height: 50px; /* tamaño en pantallas grandes */
     margin-top: 10px;
 }
 
-/* 📱 Ajustes especiales para móviles */
+/* 📱 Ajuste para móviles */
 @media (max-width: 600px) {
-    .header-box {
-        flex-direction: column;
-        text-align: center;
-    }
     .header-box img {
-        margin-top: 10px;
+        height: auto;
+        width: 80%; /* logo se ajusta al ancho de pantalla */
+        max-width: 200px; /* límite para que no se agrande demasiado */
     }
 }
 </style>
 
 <div class="header-box">
     <h1>📊 Análisis de Recompra de Clientes</h1>
-    <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif">
+    <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif" alt="Logo">
 </div>
 """, unsafe_allow_html=True)
 
@@ -416,6 +411,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
