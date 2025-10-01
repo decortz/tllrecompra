@@ -34,8 +34,13 @@ st.markdown("---")
 
 # Sidebar para instrucciones
 with st.sidebar:
-    st.header("ℹ️ Instrucciones")
     st.markdown("""
+    *Este programa fue desarrollado por:*
+    **Daniel Cortázar Triana**
+    **El Chorro Producciones SAS**
+    """)
+    st.header("ℹ️ Instrucciones")
+    st.markdown("""    
     1. **Selecciona los filtros** que deseas aplicar.
     2. **Haz clic en Analizar.** El aplicativo te mostrará los estadísticos de total de clientes y recompra por períodos.
     3. Si lo deseas **Descarga** las gráficas y el Excel con la información para armar otros informes.
@@ -361,3 +366,4 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
