@@ -28,6 +28,24 @@ def cargar_datos_desde_drive(file_id):
     except Exception as e:
         return None, str(e)
 
+# Contenedor con título y logo
+st.markdown(f"""
+<div style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #272F59;
+    border-radius: 10px;
+    padding: 15px;
+">
+    <h1 style="color: white; margin: 0; font-size: 28px;">
+        📊 Análisis de Recompra de Clientes
+    </h1>
+    <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif" 
+         alt="Logo" style="height:50px;">
+</div>
+""", unsafe_allow_html=True)
+
 # Título principal
 st.title("📊 Análisis de Recompra de Clientes")
 st.markdown("---")
@@ -35,7 +53,6 @@ st.markdown("---")
 # Sidebar para instrucciones
 with st.sidebar:
     # Marca de registro del programa
-    import streamlit as st
     # URL del logo
     logo_url = "https://elchorro.com.co/wp-content/uploads/2025/04/ch-plano.png?w=106&h=106"
     # Crear dos columnas: una para el logo, otra para el texto
@@ -379,6 +396,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
