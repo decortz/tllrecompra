@@ -51,15 +51,15 @@ st.markdown("""
 @media (max-width: 600px) {
     .header-box img {
         height: auto;
-        width: 80%; /* logo se ajusta al ancho de pantalla */
+        width: 70%; /* logo se ajusta al ancho de pantalla */
         max-width: 200px; /* límite para que no se agrande demasiado */
     }
 }
 </style>
 
 <div class="header-box">
-    <h1>📊 Análisis de Recompra de Clientes</h1>
     <img src="https://www.tellantas.com/wp-content/uploads/2022/11/cropped-cropped-logo392negativo-png.avif" alt="Logo">
+    <h1>📊 Análisis de Recompra de Clientes</h1>
 </div>
 """, unsafe_allow_html=True)
 
@@ -411,6 +411,7 @@ if st.button("🚀 ANALIZAR DATOS", type="primary", use_container_width=True):
             
 
             st.success("✅ Análisis completado exitosamente!")
+
 
 
 
