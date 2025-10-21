@@ -360,145 +360,298 @@ def fidelizacion_clientes(df):
     """
     Función que identifica clientes que NO han regresado en el año actual
     pero que sí compraron en años anteriores.
-    Muestra gráfico de clientes que han regresado y retorna lista de clientes perdidos.
+    Incluye filtros y muestra análisis detallado por año.
     """
     # Obtener temporalidad
     temp = temporalidad(df)
     año_actual = temp['año_actual']
     años_anteriores = temp['años_anteriores']
+    año_1, año_2, año_3 = años_anteriores[0], años_anteriores[1], años_anteriores[2]
 
     st.header("🔄 Fidelización de Clientes")
-    st.info(f"📅 Año actual: **{año_actual}** | Años anteriores: **{años_anteriores[0]}, {años_anteriores[1]}, {años_anteriores[2]}**")
+    st.info(f"📅 Año actual: **{año_actual}** | Años anteriores: **{año_1}, {año_2}, {año_3}**")
+
+    # SECCIÓN DE FILTROS (igual que analisis_recompra)
+    st.header("🔍 Filtros de Análisis")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    # Obtener nombres de columnas
+    columna_tipo_asesor = df.columns[11]  # Columna L
+    columna_departamento = df.columns[13]  # Columna N
+    columna_familia = df.columns[18]  # Columna S
+    columna_area = df.columns[22]  # Columna W
+
+    with col1:
+        st.subheader("👤 Asesor")
+        valores_asesor = ['Todos'] + sorted(df[columna_tipo_asesor].dropna().unique().tolist())
+        filtro_asesor = st.multiselect(
+            "Selecciona tipo(s) de asesor:",
+            valores_asesor,
+            default=['Todos'],
+            key='asesor_fidelizacion'
+        )
+
+    with col2:
+        st.subheader("🏢 CDS")
+        valores_depto = ['Todos'] + sorted(df[columna_departamento].dropna().unique().tolist())
+        filtro_depto = st.multiselect(
+            "Selecciona departamento(s):",
+            valores_depto,
+            default=['Todos'],
+            key='depto_fidelizacion'
+        )
+
+    with col3:
+        st.subheader("🛞 Producto")
+        valores_familia = ['Todos'] + sorted(df[columna_familia].dropna().unique().tolist())
+        filtro_familia = st.multiselect(
+            "Selecciona familia(s):",
+            valores_familia,
+            default=['Todos'],
+            key='familia_fidelizacion'
+        )
+
+    with col4:
+        st.subheader("📍 Área")
+        valores_area = ['Todos'] + sorted(df[columna_area].dropna().unique().tolist())
+        filtro_area = st.multiselect(
+            "Selecciona área(s):",
+            valores_area,
+            default=['Todos'],
+            key='area_fidelizacion'
+        )
+
+    st.markdown("---")
 
     if st.button("🔍 ANALIZAR FIDELIZACIÓN", type="primary", use_container_width=True, key='btn_fidelizacion'):
 
         with st.spinner('Procesando datos...'):
 
-            # Procesar datos
-            columna_id = df.columns[3]  # Código de cliente
-            columna_fecha = df.columns[2]  # Fecha
-            columna_nombre = df.columns[4]  # Nombre
-            columna_correo = df.columns[5]  # Correo
-            columna_tel1 = df.columns[6]  # Teléfono 1
-            columna_tel2 = df.columns[7]  # Teléfono 2
-            columna_placa = df.columns[8]  # Placa
+            # Aplicar filtros
+            df_filtrado = df.copy()
 
-            df_temp = df.copy()
+            if 'Todos' not in filtro_asesor:
+                df_filtrado = df_filtrado[df_filtrado[columna_tipo_asesor].isin(filtro_asesor)]
+
+            if 'Todos' not in filtro_depto:
+                df_filtrado = df_filtrado[df_filtrado[columna_departamento].isin(filtro_depto)]
+
+            if 'Todos' not in filtro_familia:
+                df_filtrado = df_filtrado[df_filtrado[columna_familia].isin(filtro_familia)]
+
+            if 'Todos' not in filtro_area:
+                df_filtrado = df_filtrado[df_filtrado[columna_area].isin(filtro_area)]
+
+            # Procesar datos
+            columna_id = df_filtrado.columns[3]  # Código de cliente
+            columna_fecha = df_filtrado.columns[2]  # Fecha
+            columna_nombre = df_filtrado.columns[4]  # Nombre
+            columna_correo = df_filtrado.columns[5]  # Correo
+            columna_tel1 = df_filtrado.columns[6]  # Teléfono 1
+            columna_tel2 = df_filtrado.columns[7]  # Teléfono 2
+            columna_placa = df_filtrado.columns[8]  # Placa
+
+            df_temp = df_filtrado.copy()
             df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], errors='coerce')
             df_temp['Año'] = df_temp[columna_fecha].dt.year
 
             df_limpio = df_temp.dropna(subset=[columna_id])
 
-            # Clientes del año actual
-            clientes_año_actual = set(df_limpio[df_limpio['Año'] == año_actual][columna_id].unique())
-
-            # Clientes de años anteriores
-            clientes_años_anteriores = set(df_limpio[df_limpio['Año'].isin(años_anteriores)][columna_id].unique())
-
-            # Clientes que NO han regresado en el año actual
-            clientes_no_regresaron = clientes_años_anteriores - clientes_año_actual
-
-            # Clientes que SÍ regresaron
-            clientes_regresaron = clientes_años_anteriores & clientes_año_actual
-
-            # Mostrar métricas
-            st.markdown("---")
-            st.header("📊 Resultados de Fidelización")
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Clientes Años Anteriores", len(clientes_años_anteriores))
-            with col2:
-                st.metric("✅ Clientes que Regresaron", len(clientes_regresaron))
-            with col3:
-                st.metric("❌ Clientes que NO Regresaron", len(clientes_no_regresaron))
-
-            # Gráfica de barras
-            st.markdown("---")
-            st.subheader("Gráfica: Comparación de clientes")
-
-            fig, ax = plt.subplots(figsize=(10, 6))
-            categorias = ['Clientes que\nRegresaron', 'Clientes que\nNO Regresaron']
-            valores = [len(clientes_regresaron), len(clientes_no_regresaron)]
-            colores = ['#2ecc71', '#e74c3c']
-
-            barras = ax.bar(categorias, valores, color=colores, edgecolor='black', linewidth=1.5)
-
-            for barra, valor in zip(barras, valores):
-                altura = barra.get_height()
-                ax.text(barra.get_x() + barra.get_width()/2., altura,
-                        f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
-
-            ax.set_title(f'Comparación de Fidelización de Clientes en {año_actual}',
-                         fontsize=15, fontweight='bold', pad=20)
-            ax.set_ylabel('Número de Clientes', fontsize=12)
-            ax.grid(axis='y', alpha=0.3, linestyle='--')
-            plt.tight_layout()
-            st.pyplot(fig)
-
-            # Obtener datos de clientes que no regresaron
-            if len(clientes_no_regresaron) > 0:
-                st.markdown("---")
-                st.header("📋 Listado de Clientes que NO Regresaron")
-
-                # Crear DataFrame con información de clientes perdidos
-                clientes_perdidos = []
-
-                for cliente_id in clientes_no_regresaron:
-                    # Obtener datos del cliente (tomar el primer registro)
-                    datos_cliente = df_limpio[df_limpio[columna_id] == cliente_id].iloc[0]
-
-                    # Determinar en qué años compró
-                    años_compra = df_limpio[df_limpio[columna_id] == cliente_id]['Año'].unique()
-                    años_compra_str = ', '.join([str(año) for año in sorted(años_compra)])
-
-                    clientes_perdidos.append({
-                        'Código Cliente': cliente_id,
-                        'Nombre': datos_cliente[columna_nombre],
-                        'Correo': datos_cliente[columna_correo],
-                        'Teléfono 1': datos_cliente[columna_tel1],
-                        'Teléfono 2': datos_cliente[columna_tel2],
-                        'Placa': datos_cliente[columna_placa],
-                        'Años en que compró': años_compra_str
-                    })
-
-                df_perdidos = pd.DataFrame(clientes_perdidos)
-
-                # Mostrar tabla
-                st.dataframe(df_perdidos, use_container_width=True)
-
-                # Botón de descarga
-                st.markdown("---")
-                st.subheader("💾 Descargar Listado")
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    # Excel
-                    output = io.BytesIO()
-                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                        df_perdidos.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
-                    output.seek(0)
-                    st.download_button(
-                        label="📥 Descargar Excel",
-                        data=output,
-                        file_name=f"clientes_no_regresaron_{año_actual}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-
-                with col2:
-                    # CSV
-                    csv = df_perdidos.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="📥 Descargar CSV",
-                        data=csv,
-                        file_name=f"clientes_no_regresaron_{año_actual}.csv",
-                        mime="text/csv"
-                    )
-
-                st.success(f"✅ Análisis completado: {len(clientes_no_regresaron)} clientes no han regresado en {año_actual}")
+            # Verificar si hay datos después del filtro
+            if len(df_limpio) == 0:
+                st.error("❌ No hay datos que coincidan con los filtros seleccionados. Por favor, ajusta tus criterios.")
             else:
-                st.success("🎉 Excelente! Todos los clientes anteriores han regresado en el año actual.")
+                st.success(f"✅ Se encontraron {len(df_limpio)} registros con los filtros aplicados")
+
+                # Clientes del año actual
+                clientes_año_actual = set(df_limpio[df_limpio['Año'] == año_actual][columna_id].unique())
+
+                # Clientes de cada año anterior
+                clientes_año_1 = set(df_limpio[df_limpio['Año'] == año_1][columna_id].unique())
+                clientes_año_2 = set(df_limpio[df_limpio['Año'] == año_2][columna_id].unique())
+                clientes_año_3 = set(df_limpio[df_limpio['Año'] == año_3][columna_id].unique())
+
+                # Clientes de años anteriores (todos)
+                clientes_años_anteriores = clientes_año_1 | clientes_año_2 | clientes_año_3
+
+                # Clientes de cada año anterior que han regresado al año actual
+                clientes_año_1_regresaron = clientes_año_1 & clientes_año_actual
+                clientes_año_2_regresaron = clientes_año_2 & clientes_año_actual
+                clientes_año_3_regresaron = clientes_año_3 & clientes_año_actual
+
+                # Clientes que NO han regresado en el año actual
+                clientes_no_regresaron = clientes_años_anteriores - clientes_año_actual
+
+                # Clientes que SÍ regresaron
+                clientes_regresaron = clientes_años_anteriores & clientes_año_actual
+
+                # Total de clientes únicos en el año actual
+                total_clientes_año_actual = len(clientes_año_actual)
+
+                # Mostrar métricas principales
+                st.markdown("---")
+                st.header("📊 Resultados de Fidelización")
+
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Clientes Años Anteriores", len(clientes_años_anteriores))
+                with col2:
+                    st.metric("✅ Clientes que Regresaron", len(clientes_regresaron))
+                with col3:
+                    st.metric("❌ Clientes que NO Regresaron", len(clientes_no_regresaron))
+                with col4:
+                    st.metric(f"Clientes {año_actual}", total_clientes_año_actual)
+
+                # GRÁFICAS
+                st.markdown("---")
+                st.header("📈 Análisis de Retorno por Año")
+
+                # Gráfica 1: Cantidad de clientes de cada año anterior que regresaron
+                st.subheader(f"Gráfica 1: Clientes de cada año anterior que regresaron en {año_actual}")
+
+                fig1, ax1 = plt.subplots(figsize=(10, 6))
+                categorias_años = [f'Del año {año_3}', f'Del año {año_2}', f'Del año {año_1}']
+                valores_regreso = [
+                    len(clientes_año_3_regresaron),
+                    len(clientes_año_2_regresaron),
+                    len(clientes_año_1_regresaron)
+                ]
+                colores_años = ['#f39c12', '#16a085', '#8e44ad']
+
+                barras1 = ax1.bar(categorias_años, valores_regreso, color=colores_años,
+                                 edgecolor='black', linewidth=1.5, width=0.6)
+
+                for barra, valor in zip(barras1, valores_regreso):
+                    altura = barra.get_height()
+                    ax1.text(barra.get_x() + barra.get_width()/2., altura,
+                            f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
+
+                ax1.set_title(f'Clientes de cada año anterior que regresaron en {año_actual}',
+                             fontsize=15, fontweight='bold', pad=20)
+                ax1.set_ylabel('Número de Clientes', fontsize=12)
+                ax1.set_xlabel('Año de origen', fontsize=12)
+                ax1.grid(axis='y', alpha=0.3, linestyle='--')
+                plt.tight_layout()
+                st.pyplot(fig1)
+
+                # Gráfica 2: Porcentaje respecto al total del año actual
+                st.subheader(f"Gráfica 2: Porcentaje respecto a clientes únicos de {año_actual}")
+
+                fig2, ax2 = plt.subplots(figsize=(10, 6))
+
+                if total_clientes_año_actual > 0:
+                    porcentajes = [
+                        (len(clientes_año_3_regresaron) / total_clientes_año_actual) * 100,
+                        (len(clientes_año_2_regresaron) / total_clientes_año_actual) * 100,
+                        (len(clientes_año_1_regresaron) / total_clientes_año_actual) * 100
+                    ]
+                else:
+                    porcentajes = [0, 0, 0]
+
+                barras2 = ax2.bar(categorias_años, porcentajes, color=colores_años,
+                                 edgecolor='black', linewidth=1.5, width=0.6)
+
+                for barra, porcentaje in zip(barras2, porcentajes):
+                    altura = barra.get_height()
+                    ax2.text(barra.get_x() + barra.get_width()/2., altura,
+                            f'{porcentaje:.1f}%', ha='center', va='bottom', fontsize=13, fontweight='bold')
+
+                ax2.set_title(f'Porcentaje de clientes de años anteriores respecto a total de {año_actual}',
+                             fontsize=15, fontweight='bold', pad=20)
+                ax2.set_ylabel('Porcentaje (%)', fontsize=12)
+                ax2.set_xlabel('Año de origen', fontsize=12)
+                ax2.grid(axis='y', alpha=0.3, linestyle='--')
+                ax2.set_ylim(0, max(porcentajes) * 1.15 if max(porcentajes) > 0 else 100)
+                plt.tight_layout()
+                st.pyplot(fig2)
+
+                # Gráfica 3: Comparación de clientes que regresaron vs no regresaron
+                st.markdown("---")
+                st.subheader("Gráfica 3: Comparación general de fidelización")
+
+                fig3, ax3 = plt.subplots(figsize=(10, 6))
+                categorias = ['Clientes que\nRegresaron', 'Clientes que\nNO Regresaron']
+                valores = [len(clientes_regresaron), len(clientes_no_regresaron)]
+                colores = ['#2ecc71', '#e74c3c']
+
+                barras3 = ax3.bar(categorias, valores, color=colores, edgecolor='black', linewidth=1.5)
+
+                for barra, valor in zip(barras3, valores):
+                    altura = barra.get_height()
+                    ax3.text(barra.get_x() + barra.get_width()/2., altura,
+                            f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
+
+                ax3.set_title(f'Comparación de Fidelización de Clientes en {año_actual}',
+                             fontsize=15, fontweight='bold', pad=20)
+                ax3.set_ylabel('Número de Clientes', fontsize=12)
+                ax3.grid(axis='y', alpha=0.3, linestyle='--')
+                plt.tight_layout()
+                st.pyplot(fig3)
+
+                # Obtener datos de clientes que no regresaron
+                if len(clientes_no_regresaron) > 0:
+                    st.markdown("---")
+                    st.header("📋 Listado de Clientes que NO Regresaron")
+
+                    # Crear DataFrame con información de clientes perdidos
+                    clientes_perdidos = []
+
+                    for cliente_id in clientes_no_regresaron:
+                        # Obtener datos del cliente (tomar el primer registro)
+                        datos_cliente = df_limpio[df_limpio[columna_id] == cliente_id].iloc[0]
+
+                        # Determinar en qué años compró
+                        años_compra = df_limpio[df_limpio[columna_id] == cliente_id]['Año'].unique()
+                        años_compra_str = ', '.join([str(año) for año in sorted(años_compra)])
+
+                        clientes_perdidos.append({
+                            'Código Cliente': cliente_id,
+                            'Nombre': datos_cliente[columna_nombre],
+                            'Correo': datos_cliente[columna_correo],
+                            'Teléfono 1': datos_cliente[columna_tel1],
+                            'Teléfono 2': datos_cliente[columna_tel2],
+                            'Placa': datos_cliente[columna_placa],
+                            'Años en que compró': años_compra_str
+                        })
+
+                    df_perdidos = pd.DataFrame(clientes_perdidos)
+
+                    # Mostrar tabla
+                    st.dataframe(df_perdidos, use_container_width=True)
+
+                    # Botón de descarga
+                    st.markdown("---")
+                    st.subheader("💾 Descargar Listado")
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        # Excel
+                        output = io.BytesIO()
+                        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                            df_perdidos.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
+                        output.seek(0)
+                        st.download_button(
+                            label="📥 Descargar Excel",
+                            data=output,
+                            file_name=f"clientes_no_regresaron_{año_actual}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+
+                    with col2:
+                        # CSV
+                        csv = df_perdidos.to_csv(index=False, encoding='utf-8-sig')
+                        st.download_button(
+                            label="📥 Descargar CSV",
+                            data=csv,
+                            file_name=f"clientes_no_regresaron_{año_actual}.csv",
+                            mime="text/csv"
+                        )
+
+                    st.success(f"✅ Análisis completado: {len(clientes_no_regresaron)} clientes no han regresado en {año_actual}")
+                else:
+                    st.success("🎉 Excelente! Todos los clientes anteriores han regresado en el año actual.")
 
 
 # ============================================
@@ -582,9 +735,13 @@ with st.sidebar:
         """)
     else:  # Fidelización de Clientes
         st.markdown("""
-        1. **Haz clic en Analizar Fidelización** para identificar clientes que no han regresado en el año actual.
-        2. Verás una **gráfica comparativa** de clientes que regresaron vs los que no.
-        3. Podrás **descargar un listado completo** con datos de contacto de clientes que no han regresado.
+        1. **Selecciona los filtros** que deseas aplicar (igual que en Análisis de Recompra).
+        2. **Haz clic en Analizar Fidelización** para identificar clientes que no han regresado en el año actual.
+        3. Verás **gráficas detalladas** de:
+           - Clientes de cada año anterior que regresaron
+           - Porcentajes respecto al total del año actual
+           - Comparación general de fidelización
+        4. Podrás **descargar un listado completo** con datos de contacto de clientes que no han regresado.
         """)
 
     st.markdown("---")
