@@ -503,6 +503,18 @@ def fidelizacion_clientes(df):
                 with col4:
                     st.metric(f"Clientes {año_actual}", total_clientes_año_actual)
 
+                # Mostrar última fecha de actualización
+                fecha_maxima = df_temp[columna_fecha].max()
+                meses = {
+                    1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+                    5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+                    9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+                }
+                dia = fecha_maxima.day
+                mes = meses[fecha_maxima.month]
+                año = fecha_maxima.year
+                st.info(f"📅 Estos datos están actualizados al {dia} de {mes} de {año}")
+
                 # GRÁFICAS
                 st.markdown("---")
                 st.header("📈 Análisis de Retorno por Año")
