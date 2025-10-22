@@ -677,6 +677,10 @@ def fidelizacion_clientes(df):
                 productos_cliente = df_limpio[df_limpio[columna_id] == cliente_id][columna_producto].dropna().unique()
                 productos_str = ', '.join(sorted(productos_cliente)) if len(productos_cliente) > 0 else 'Sin datos'
 
+                # Obtener todas las placas únicas del cliente
+                placas_cliente = df_limpio[df_limpio[columna_id] == cliente_id][columna_placa].dropna().unique()
+                placas_str = ', '.join(sorted(placas_cliente)) if len(placas_cliente) > 0 else 'Sin datos'
+
                 clientes_perdidos.append({
                     'Código Cliente': cliente_id,
                     'Nombre': datos_cliente[columna_nombre],
@@ -684,7 +688,7 @@ def fidelizacion_clientes(df):
                     'Correo': datos_cliente[columna_correo],
                     'Teléfono 1': datos_cliente[columna_tel1],
                     'Teléfono 2': datos_cliente[columna_tel2],
-                    'Placa': datos_cliente[columna_placa],
+                    'Placas': placas_str,
                     'Años en que compró': años_compra_str
                 })
 
