@@ -20,10 +20,13 @@ GOOGLE_DRIVE_FILE_ID = "1CCKbRsijh7qls7-tUWgVoeHhlGHTrflY"
 # Función para cargar datos desde Google Drive
 @st.cache_data(ttl=3600)  # Cache por 1 hora
 def cargar_datos_desde_drive(file_id):
-    """Carga el CSV desde Google Drive"""
+    """Carga el CSV desde Google Drive y convierte las fechas correctamente"""
     url = f'https://drive.google.com/uc?id={file_id}'
     try:
         df = pd.read_csv(url)
+        # Convertir la columna de fecha AQUÍ, una sola vez, en formato DD/MM/YYYY
+        columna_fecha = df.columns[2]  # Columna C [2]
+        df[columna_fecha] = pd.to_datetime(df[columna_fecha], format='%d/%m/%Y', errors='coerce')
         return df, None
     except Exception as e:
         return None, str(e)
@@ -33,16 +36,15 @@ def temporalidad(df):
     Identifica el año actual (último año con datos) y los 3 años anteriores.
 
     Args:
-        df: DataFrame con los datos de ventas
+        df: DataFrame con los datos de ventas (con fechas ya convertidas)
 
     Returns:
         dict: Diccionario con año_actual y lista de años_anteriores
     """
     columna_fecha = df.columns[2]  # Columna C [2]
 
-    # Convertir fechas y obtener años
+    # Obtener años (la fecha ya viene convertida desde cargar_datos_desde_drive)
     df_temp = df.copy()
-    df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], errors='coerce')
     df_temp['Año'] = df_temp[columna_fecha].dt.year
 
     # Obtener el último año con datos
@@ -141,9 +143,8 @@ def analisis_recompra(df):
             if 'Todos' not in filtro_area:
                 df_filtrado = df_filtrado[df_filtrado[columna_area].isin(filtro_area)]
 
-            # Filtrar solo los 3 años anteriores
+            # Filtrar solo los 3 años anteriores (la fecha ya viene convertida)
             columna_fecha = df_filtrado.columns[2]
-            df_filtrado[columna_fecha] = pd.to_datetime(df_filtrado[columna_fecha], errors='coerce')
             df_filtrado['Año'] = df_filtrado[columna_fecha].dt.year
             df_filtrado = df_filtrado[df_filtrado['Año'].isin(años_anteriores)]
 
@@ -453,7 +454,6 @@ def fidelizacion_clientes(df):
             columna_placa = df_filtrado.columns[8]  # Placa
 
             df_temp = df_filtrado.copy()
-            df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], errors='coerce')
             df_temp['Año'] = df_temp[columna_fecha].dt.year
 
             df_limpio = df_temp.dropna(subset=[columna_id])
@@ -505,9 +505,7 @@ def fidelizacion_clientes(df):
 
                 # Mostrar última fecha de actualización (del archivo completo)
                 columna_fecha_completa = df.columns[2]  # Columna C [2]
-                df_fechas = df.copy()
-                df_fechas[columna_fecha_completa] = pd.to_datetime(df_fechas[columna_fecha_completa], format='%d/%m/%Y', errors='coerce')
-                fecha_maxima = df_fechas[columna_fecha_completa].max()
+                fecha_maxima = df[columna_fecha_completa].max()
 
                 meses = {
                     1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
@@ -611,6 +609,7 @@ def fidelizacion_clientes(df):
                     st.header("📋 Listado de Clientes que NO Regresaron")
 
                     # Crear DataFrame con información de clientes perdidos
+                    columna_producto = df.columns[16]  # Columna Q [16]
                     clientes_perdidos = []
 
                     for cliente_id in clientes_no_regresaron:
@@ -621,9 +620,14 @@ def fidelizacion_clientes(df):
                         años_compra = df_limpio[df_limpio[columna_id] == cliente_id]['Año'].unique()
                         años_compra_str = ', '.join([str(año) for año in sorted(años_compra)])
 
+                        # Obtener productos únicos que compró este cliente
+                        productos_cliente = df_limpio[df_limpio[columna_id] == cliente_id][columna_producto].dropna().unique()
+                        productos_str = ', '.join(sorted(productos_cliente)) if len(productos_cliente) > 0 else 'Sin datos'
+
                         clientes_perdidos.append({
                             'Código Cliente': cliente_id,
                             'Nombre': datos_cliente[columna_nombre],
+                            'Productos Comprados': productos_str,
                             'Correo': datos_cliente[columna_correo],
                             'Teléfono 1': datos_cliente[columna_tel1],
                             'Teléfono 2': datos_cliente[columna_tel2],
@@ -633,8 +637,55 @@ def fidelizacion_clientes(df):
 
                     df_perdidos = pd.DataFrame(clientes_perdidos)
 
+                    # FILTRO POST-ANÁLISIS: Filtrar por tipo de producto
+                    st.subheader("🔍 Filtrar por Tipo de Producto")
+
+                    # Obtener todos los productos únicos de los clientes perdidos
+                    todos_productos = []
+                    for productos_str in df_perdidos['Productos Comprados']:
+                        if productos_str != 'Sin datos':
+                            productos_list = [p.strip() for p in productos_str.split(',')]
+                            todos_productos.extend(productos_list)
+
+                    productos_unicos = sorted(set(todos_productos))
+
+                    # Crear diccionario con contador de clientes por producto
+                    contador_productos = {}
+                    for producto in productos_unicos:
+                        count = sum(1 for p in df_perdidos['Productos Comprados'] if producto in p)
+                        contador_productos[producto] = count
+
+                    # Crear opciones con contadores
+                    opciones_productos = ['Todos'] + [f"{prod} ({contador_productos[prod]} clientes)" for prod in productos_unicos]
+
+                    filtro_productos = st.multiselect(
+                        "Selecciona tipo(s) de producto (puedes escribir para buscar):",
+                        opciones_productos,
+                        default=['Todos'],
+                        help="Filtra clientes según los productos que compraron. Usa la búsqueda escribiendo parte del nombre."
+                    )
+
+                    # Aplicar filtro de productos
+                    df_mostrar = df_perdidos.copy()
+
+                    if 'Todos' not in filtro_productos and len(filtro_productos) > 0:
+                        # Extraer nombres de productos sin el contador
+                        productos_seleccionados = [p.rsplit(' (', 1)[0] for p in filtro_productos]
+
+                        # Filtrar DataFrame
+                        mask = df_mostrar['Productos Comprados'].apply(
+                            lambda x: any(prod in x for prod in productos_seleccionados)
+                        )
+                        df_mostrar = df_mostrar[mask]
+
+                    # Mostrar información de filtrado
+                    if len(df_mostrar) < len(df_perdidos):
+                        st.info(f"📊 Mostrando **{len(df_mostrar)}** de **{len(df_perdidos)}** clientes")
+                    else:
+                        st.info(f"📊 Mostrando **{len(df_perdidos)}** clientes")
+
                     # Mostrar tabla
-                    st.dataframe(df_perdidos, use_container_width=True)
+                    st.dataframe(df_mostrar, use_container_width=True)
 
                     # Botón de descarga
                     st.markdown("---")
@@ -643,23 +694,23 @@ def fidelizacion_clientes(df):
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        # Excel
+                        # Excel (con datos filtrados)
                         output = io.BytesIO()
                         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                            df_perdidos.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
+                            df_mostrar.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
                         output.seek(0)
                         st.download_button(
-                            label="📥 Descargar Excel",
+                            label=f"📥 Descargar Excel ({len(df_mostrar)} clientes)",
                             data=output,
                             file_name=f"clientes_no_regresaron_{año_actual}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
 
                     with col2:
-                        # CSV
-                        csv = df_perdidos.to_csv(index=False, encoding='utf-8-sig')
+                        # CSV (con datos filtrados)
+                        csv = df_mostrar.to_csv(index=False, encoding='utf-8-sig')
                         st.download_button(
-                            label="📥 Descargar CSV",
+                            label=f"📥 Descargar CSV ({len(df_mostrar)} clientes)",
                             data=csv,
                             file_name=f"clientes_no_regresaron_{año_actual}.csv",
                             mime="text/csv"
