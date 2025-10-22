@@ -503,8 +503,12 @@ def fidelizacion_clientes(df):
                 with col4:
                     st.metric(f"Clientes {año_actual}", total_clientes_año_actual)
 
-                # Mostrar última fecha de actualización
-                fecha_maxima = df_temp[columna_fecha].max()
+                # Mostrar última fecha de actualización (del archivo completo)
+                columna_fecha_completa = df.columns[2]  # Columna C [2]
+                df_fechas = df.copy()
+                df_fechas[columna_fecha_completa] = pd.to_datetime(df_fechas[columna_fecha_completa], errors='coerce')
+                fecha_maxima = df_fechas[columna_fecha_completa].max()
+
                 meses = {
                     1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
                     5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
