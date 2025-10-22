@@ -20,10 +20,13 @@ GOOGLE_DRIVE_FILE_ID = "1CCKbRsijh7qls7-tUWgVoeHhlGHTrflY"
 # Función para cargar datos desde Google Drive
 @st.cache_data(ttl=3600)  # Cache por 1 hora
 def cargar_datos_desde_drive(file_id):
-    """Carga el CSV desde Google Drive"""
+    """Carga el CSV desde Google Drive y convierte las fechas correctamente"""
     url = f'https://drive.google.com/uc?id={file_id}'
     try:
         df = pd.read_csv(url)
+        # Convertir la columna de fecha AQUÍ, una sola vez, en formato DD/MM/YYYY
+        columna_fecha = df.columns[2]  # Columna C [2]
+        df[columna_fecha] = pd.to_datetime(df[columna_fecha], format='%d/%m/%Y', errors='coerce')
         return df, None
     except Exception as e:
         return None, str(e)
@@ -33,16 +36,15 @@ def temporalidad(df):
     Identifica el año actual (último año con datos) y los 3 años anteriores.
 
     Args:
-        df: DataFrame con los datos de ventas
+        df: DataFrame con los datos de ventas (con fechas ya convertidas)
 
     Returns:
         dict: Diccionario con año_actual y lista de años_anteriores
     """
     columna_fecha = df.columns[2]  # Columna C [2]
 
-    # Convertir fechas y obtener años
+    # Obtener años (la fecha ya viene convertida desde cargar_datos_desde_drive)
     df_temp = df.copy()
-    df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], format='%d/%m/%Y', errors='coerce')
     df_temp['Año'] = df_temp[columna_fecha].dt.year
 
     # Obtener el último año con datos
@@ -141,9 +143,8 @@ def analisis_recompra(df):
             if 'Todos' not in filtro_area:
                 df_filtrado = df_filtrado[df_filtrado[columna_area].isin(filtro_area)]
 
-            # Filtrar solo los 3 años anteriores
+            # Filtrar solo los 3 años anteriores (la fecha ya viene convertida)
             columna_fecha = df_filtrado.columns[2]
-            df_filtrado[columna_fecha] = pd.to_datetime(df_filtrado[columna_fecha], format='%d/%m/%Y', errors='coerce')
             df_filtrado['Año'] = df_filtrado[columna_fecha].dt.year
             df_filtrado = df_filtrado[df_filtrado['Año'].isin(años_anteriores)]
 
@@ -453,7 +454,6 @@ def fidelizacion_clientes(df):
             columna_placa = df_filtrado.columns[8]  # Placa
 
             df_temp = df_filtrado.copy()
-            df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], format='%d/%m/%Y', errors='coerce')
             df_temp['Año'] = df_temp[columna_fecha].dt.year
 
             df_limpio = df_temp.dropna(subset=[columna_id])
@@ -505,9 +505,7 @@ def fidelizacion_clientes(df):
 
                 # Mostrar última fecha de actualización (del archivo completo)
                 columna_fecha_completa = df.columns[2]  # Columna C [2]
-                df_fechas = df.copy()
-                df_fechas[columna_fecha_completa] = pd.to_datetime(df_fechas[columna_fecha_completa], format='%d/%m/%Y', errors='coerce')
-                fecha_maxima = df_fechas[columna_fecha_completa].max()
+                fecha_maxima = df[columna_fecha_completa].max()
 
                 meses = {
                     1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
