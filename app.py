@@ -42,7 +42,7 @@ def temporalidad(df):
 
     # Convertir fechas y obtener años
     df_temp = df.copy()
-    df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], errors='coerce')
+    df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], format='%d/%m/%Y', errors='coerce')
     df_temp['Año'] = df_temp[columna_fecha].dt.year
 
     # Obtener el último año con datos
@@ -143,7 +143,7 @@ def analisis_recompra(df):
 
             # Filtrar solo los 3 años anteriores
             columna_fecha = df_filtrado.columns[2]
-            df_filtrado[columna_fecha] = pd.to_datetime(df_filtrado[columna_fecha], errors='coerce')
+            df_filtrado[columna_fecha] = pd.to_datetime(df_filtrado[columna_fecha], format='%d/%m/%Y', errors='coerce')
             df_filtrado['Año'] = df_filtrado[columna_fecha].dt.year
             df_filtrado = df_filtrado[df_filtrado['Año'].isin(años_anteriores)]
 
@@ -453,7 +453,7 @@ def fidelizacion_clientes(df):
             columna_placa = df_filtrado.columns[8]  # Placa
 
             df_temp = df_filtrado.copy()
-            df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], errors='coerce')
+            df_temp[columna_fecha] = pd.to_datetime(df_temp[columna_fecha], format='%d/%m/%Y', errors='coerce')
             df_temp['Año'] = df_temp[columna_fecha].dt.year
 
             df_limpio = df_temp.dropna(subset=[columna_id])
