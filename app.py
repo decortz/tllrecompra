@@ -425,6 +425,7 @@ def fidelizacion_clientes(df):
 
     st.markdown("---")
 
+    # Botón para ejecutar análisis
     if st.button("🔍 ANALIZAR FIDELIZACIÓN", type="primary", use_container_width=True, key='btn_fidelizacion'):
 
         with st.spinner('Procesando datos...'):
@@ -461,6 +462,9 @@ def fidelizacion_clientes(df):
             # Verificar si hay datos después del filtro
             if len(df_limpio) == 0:
                 st.error("❌ No hay datos que coincidan con los filtros seleccionados. Por favor, ajusta tus criterios.")
+                # Limpiar session_state si no hay datos
+                if 'fidelizacion_data' in st.session_state:
+                    del st.session_state['fidelizacion_data']
             else:
                 st.success(f"✅ Se encontraron {len(df_limpio)} registros con los filtros aplicados")
 
@@ -489,236 +493,285 @@ def fidelizacion_clientes(df):
                 # Total de clientes únicos en el año actual
                 total_clientes_año_actual = len(clientes_año_actual)
 
-                # Mostrar métricas principales
-                st.markdown("---")
-                st.header("📊 Resultados de Fidelización")
-
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("Clientes Años Anteriores", len(clientes_años_anteriores))
-                with col2:
-                    st.metric("✅ Clientes que Regresaron", len(clientes_regresaron))
-                with col3:
-                    st.metric("❌ Clientes que NO Regresaron", len(clientes_no_regresaron))
-                with col4:
-                    st.metric(f"Clientes {año_actual}", total_clientes_año_actual)
-
-                # Mostrar última fecha de actualización (del archivo completo)
+                # Fecha de actualización
                 columna_fecha_completa = df.columns[2]  # Columna C [2]
                 fecha_maxima = df[columna_fecha_completa].max()
 
-                meses = {
-                    1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
-                    5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
-                    9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+                # GUARDAR TODOS LOS DATOS EN SESSION_STATE
+                st.session_state['fidelizacion_data'] = {
+                    'df_limpio': df_limpio,
+                    'clientes_no_regresaron': clientes_no_regresaron,
+                    'clientes_regresaron': clientes_regresaron,
+                    'clientes_años_anteriores': clientes_años_anteriores,
+                    'total_clientes_año_actual': total_clientes_año_actual,
+                    'clientes_año_1_regresaron': clientes_año_1_regresaron,
+                    'clientes_año_2_regresaron': clientes_año_2_regresaron,
+                    'clientes_año_3_regresaron': clientes_año_3_regresaron,
+                    'año_actual': año_actual,
+                    'año_1': año_1,
+                    'año_2': año_2,
+                    'año_3': año_3,
+                    'columna_id': columna_id,
+                    'columna_nombre': columna_nombre,
+                    'columna_correo': columna_correo,
+                    'columna_tel1': columna_tel1,
+                    'columna_tel2': columna_tel2,
+                    'columna_placa': columna_placa,
+                    'fecha_maxima': fecha_maxima
                 }
-                dia = fecha_maxima.day
-                mes = meses[fecha_maxima.month]
-                año = fecha_maxima.year
-                st.info(f"📅 Estos datos están actualizados al {dia} de {mes} de {año}")
 
-                # GRÁFICAS
-                st.markdown("---")
-                st.header("📈 Análisis de Retorno por Año")
+    # RENDERIZAR RESULTADOS SI EXISTEN EN SESSION_STATE
+    if 'fidelizacion_data' in st.session_state:
+        data = st.session_state['fidelizacion_data']
 
-                # Gráfica 1: Cantidad de clientes de cada año anterior que regresaron
-                st.subheader(f"Gráfica 1: Clientes de cada año anterior que regresaron en {año_actual}")
+        # Extraer datos de session_state
+        df_limpio = data['df_limpio']
+        clientes_no_regresaron = data['clientes_no_regresaron']
+        clientes_regresaron = data['clientes_regresaron']
+        clientes_años_anteriores = data['clientes_años_anteriores']
+        total_clientes_año_actual = data['total_clientes_año_actual']
+        clientes_año_1_regresaron = data['clientes_año_1_regresaron']
+        clientes_año_2_regresaron = data['clientes_año_2_regresaron']
+        clientes_año_3_regresaron = data['clientes_año_3_regresaron']
+        año_actual = data['año_actual']
+        año_1 = data['año_1']
+        año_2 = data['año_2']
+        año_3 = data['año_3']
+        columna_id = data['columna_id']
+        columna_nombre = data['columna_nombre']
+        columna_correo = data['columna_correo']
+        columna_tel1 = data['columna_tel1']
+        columna_tel2 = data['columna_tel2']
+        columna_placa = data['columna_placa']
+        fecha_maxima = data['fecha_maxima']
 
-                fig1, ax1 = plt.subplots(figsize=(10, 6))
-                categorias_años = [f'Del año {año_3}', f'Del año {año_2}', f'Del año {año_1}']
-                valores_regreso = [
-                    len(clientes_año_3_regresaron),
-                    len(clientes_año_2_regresaron),
-                    len(clientes_año_1_regresaron)
-                ]
-                colores_años = ['#f39c12', '#16a085', '#8e44ad']
+        # Mostrar métricas principales
+        st.markdown("---")
+        st.header("📊 Resultados de Fidelización")
 
-                barras1 = ax1.bar(categorias_años, valores_regreso, color=colores_años,
-                                 edgecolor='black', linewidth=1.5, width=0.6)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Clientes Años Anteriores", len(clientes_años_anteriores))
+        with col2:
+            st.metric("✅ Clientes que Regresaron", len(clientes_regresaron))
+        with col3:
+            st.metric("❌ Clientes que NO Regresaron", len(clientes_no_regresaron))
+        with col4:
+            st.metric(f"Clientes {año_actual}", total_clientes_año_actual)
 
-                for barra, valor in zip(barras1, valores_regreso):
-                    altura = barra.get_height()
-                    ax1.text(barra.get_x() + barra.get_width()/2., altura,
-                            f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
+        # Mostrar última fecha de actualización
+        meses = {
+            1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+            5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+            9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+        }
+        dia = fecha_maxima.day
+        mes = meses[fecha_maxima.month]
+        año = fecha_maxima.year
+        st.info(f"📅 Estos datos están actualizados al {dia} de {mes} de {año}")
 
-                ax1.set_title(f'Clientes de cada año anterior que regresaron en {año_actual}',
-                             fontsize=15, fontweight='bold', pad=20)
-                ax1.set_ylabel('Número de Clientes', fontsize=12)
-                ax1.set_xlabel('Año de origen', fontsize=12)
-                ax1.grid(axis='y', alpha=0.3, linestyle='--')
-                plt.tight_layout()
-                st.pyplot(fig1)
+        # GRÁFICAS
+        st.markdown("---")
+        st.header("📈 Análisis de Retorno por Año")
 
-                # Gráfica 2: Porcentaje respecto al total del año actual
-                st.subheader(f"Gráfica 2: Porcentaje respecto a clientes únicos de {año_actual}")
+        # Gráfica 1: Cantidad de clientes de cada año anterior que regresaron
+        st.subheader(f"Gráfica 1: Clientes de cada año anterior que regresaron en {año_actual}")
 
-                fig2, ax2 = plt.subplots(figsize=(10, 6))
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
+        categorias_años = [f'Del año {año_3}', f'Del año {año_2}', f'Del año {año_1}']
+        valores_regreso = [
+            len(clientes_año_3_regresaron),
+            len(clientes_año_2_regresaron),
+            len(clientes_año_1_regresaron)
+        ]
+        colores_años = ['#f39c12', '#16a085', '#8e44ad']
 
-                if total_clientes_año_actual > 0:
-                    porcentajes = [
-                        (len(clientes_año_3_regresaron) / total_clientes_año_actual) * 100,
-                        (len(clientes_año_2_regresaron) / total_clientes_año_actual) * 100,
-                        (len(clientes_año_1_regresaron) / total_clientes_año_actual) * 100
-                    ]
-                else:
-                    porcentajes = [0, 0, 0]
+        barras1 = ax1.bar(categorias_años, valores_regreso, color=colores_años,
+                         edgecolor='black', linewidth=1.5, width=0.6)
 
-                barras2 = ax2.bar(categorias_años, porcentajes, color=colores_años,
-                                 edgecolor='black', linewidth=1.5, width=0.6)
+        for barra, valor in zip(barras1, valores_regreso):
+            altura = barra.get_height()
+            ax1.text(barra.get_x() + barra.get_width()/2., altura,
+                    f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
 
-                for barra, porcentaje in zip(barras2, porcentajes):
-                    altura = barra.get_height()
-                    ax2.text(barra.get_x() + barra.get_width()/2., altura,
-                            f'{porcentaje:.1f}%', ha='center', va='bottom', fontsize=13, fontweight='bold')
+        ax1.set_title(f'Clientes de cada año anterior que regresaron en {año_actual}',
+                     fontsize=15, fontweight='bold', pad=20)
+        ax1.set_ylabel('Número de Clientes', fontsize=12)
+        ax1.set_xlabel('Año de origen', fontsize=12)
+        ax1.grid(axis='y', alpha=0.3, linestyle='--')
+        plt.tight_layout()
+        st.pyplot(fig1)
 
-                ax2.set_title(f'Porcentaje de clientes de años anteriores respecto a total de {año_actual}',
-                             fontsize=15, fontweight='bold', pad=20)
-                ax2.set_ylabel('Porcentaje (%)', fontsize=12)
-                ax2.set_xlabel('Año de origen', fontsize=12)
-                ax2.grid(axis='y', alpha=0.3, linestyle='--')
-                ax2.set_ylim(0, max(porcentajes) * 1.15 if max(porcentajes) > 0 else 100)
-                plt.tight_layout()
-                st.pyplot(fig2)
+        # Gráfica 2: Porcentaje respecto al total del año actual
+        st.subheader(f"Gráfica 2: Porcentaje respecto a clientes únicos de {año_actual}")
 
-                # Gráfica 3: Comparación de clientes que regresaron vs no regresaron
-                st.markdown("---")
-                st.subheader("Gráfica 3: Comparación general de fidelización")
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
 
-                fig3, ax3 = plt.subplots(figsize=(10, 6))
-                categorias = ['Clientes que\nRegresaron', 'Clientes que\nNO Regresaron']
-                valores = [len(clientes_regresaron), len(clientes_no_regresaron)]
-                colores = ['#2ecc71', '#e74c3c']
+        if total_clientes_año_actual > 0:
+            porcentajes = [
+                (len(clientes_año_3_regresaron) / total_clientes_año_actual) * 100,
+                (len(clientes_año_2_regresaron) / total_clientes_año_actual) * 100,
+                (len(clientes_año_1_regresaron) / total_clientes_año_actual) * 100
+            ]
+        else:
+            porcentajes = [0, 0, 0]
 
-                barras3 = ax3.bar(categorias, valores, color=colores, edgecolor='black', linewidth=1.5)
+        barras2 = ax2.bar(categorias_años, porcentajes, color=colores_años,
+                         edgecolor='black', linewidth=1.5, width=0.6)
 
-                for barra, valor in zip(barras3, valores):
-                    altura = barra.get_height()
-                    ax3.text(barra.get_x() + barra.get_width()/2., altura,
-                            f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
+        for barra, porcentaje in zip(barras2, porcentajes):
+            altura = barra.get_height()
+            ax2.text(barra.get_x() + barra.get_width()/2., altura,
+                    f'{porcentaje:.1f}%', ha='center', va='bottom', fontsize=13, fontweight='bold')
 
-                ax3.set_title(f'Comparación de Fidelización de Clientes en {año_actual}',
-                             fontsize=15, fontweight='bold', pad=20)
-                ax3.set_ylabel('Número de Clientes', fontsize=12)
-                ax3.grid(axis='y', alpha=0.3, linestyle='--')
-                plt.tight_layout()
-                st.pyplot(fig3)
+        ax2.set_title(f'Porcentaje de clientes de años anteriores respecto a total de {año_actual}',
+                     fontsize=15, fontweight='bold', pad=20)
+        ax2.set_ylabel('Porcentaje (%)', fontsize=12)
+        ax2.set_xlabel('Año de origen', fontsize=12)
+        ax2.grid(axis='y', alpha=0.3, linestyle='--')
+        ax2.set_ylim(0, max(porcentajes) * 1.15 if max(porcentajes) > 0 else 100)
+        plt.tight_layout()
+        st.pyplot(fig2)
 
-                # Obtener datos de clientes que no regresaron
-                if len(clientes_no_regresaron) > 0:
-                    st.markdown("---")
-                    st.header("📋 Listado de Clientes que NO Regresaron")
+        # Gráfica 3: Comparación de clientes que regresaron vs no regresaron
+        st.markdown("---")
+        st.subheader("Gráfica 3: Comparación general de fidelización")
 
-                    # Crear DataFrame con información de clientes perdidos
-                    columna_producto = df.columns[16]  # Columna Q [16]
-                    clientes_perdidos = []
+        fig3, ax3 = plt.subplots(figsize=(10, 6))
+        categorias = ['Clientes que\nRegresaron', 'Clientes que\nNO Regresaron']
+        valores = [len(clientes_regresaron), len(clientes_no_regresaron)]
+        colores = ['#2ecc71', '#e74c3c']
 
-                    for cliente_id in clientes_no_regresaron:
-                        # Obtener datos del cliente (tomar el primer registro)
-                        datos_cliente = df_limpio[df_limpio[columna_id] == cliente_id].iloc[0]
+        barras3 = ax3.bar(categorias, valores, color=colores, edgecolor='black', linewidth=1.5)
 
-                        # Determinar en qué años compró
-                        años_compra = df_limpio[df_limpio[columna_id] == cliente_id]['Año'].unique()
-                        años_compra_str = ', '.join([str(año) for año in sorted(años_compra)])
+        for barra, valor in zip(barras3, valores):
+            altura = barra.get_height()
+            ax3.text(barra.get_x() + barra.get_width()/2., altura,
+                    f'{int(valor)}', ha='center', va='bottom', fontsize=13, fontweight='bold')
 
-                        # Obtener productos únicos que compró este cliente
-                        productos_cliente = df_limpio[df_limpio[columna_id] == cliente_id][columna_producto].dropna().unique()
-                        productos_str = ', '.join(sorted(productos_cliente)) if len(productos_cliente) > 0 else 'Sin datos'
+        ax3.set_title(f'Comparación de Fidelización de Clientes en {año_actual}',
+                     fontsize=15, fontweight='bold', pad=20)
+        ax3.set_ylabel('Número de Clientes', fontsize=12)
+        ax3.grid(axis='y', alpha=0.3, linestyle='--')
+        plt.tight_layout()
+        st.pyplot(fig3)
 
-                        clientes_perdidos.append({
-                            'Código Cliente': cliente_id,
-                            'Nombre': datos_cliente[columna_nombre],
-                            'Productos Comprados': productos_str,
-                            'Correo': datos_cliente[columna_correo],
-                            'Teléfono 1': datos_cliente[columna_tel1],
-                            'Teléfono 2': datos_cliente[columna_tel2],
-                            'Placa': datos_cliente[columna_placa],
-                            'Años en que compró': años_compra_str
-                        })
+        # Obtener datos de clientes que no regresaron
+        if len(clientes_no_regresaron) > 0:
+            st.markdown("---")
+            st.header("📋 Listado de Clientes que NO Regresaron")
 
-                    df_perdidos = pd.DataFrame(clientes_perdidos)
+            # Crear DataFrame con información de clientes perdidos
+            columna_producto = df.columns[16]  # Columna Q [16]
+            clientes_perdidos = []
 
-                    # FILTRO POST-ANÁLISIS: Filtrar por tipo de producto
-                    st.subheader("🔍 Filtrar por Tipo de Producto")
+            for cliente_id in clientes_no_regresaron:
+                # Obtener datos del cliente (tomar el primer registro)
+                datos_cliente = df_limpio[df_limpio[columna_id] == cliente_id].iloc[0]
 
-                    # Obtener todos los productos únicos de los clientes perdidos
-                    todos_productos = []
-                    for productos_str in df_perdidos['Productos Comprados']:
-                        if productos_str != 'Sin datos':
-                            productos_list = [p.strip() for p in productos_str.split(',')]
-                            todos_productos.extend(productos_list)
+                # Determinar en qué años compró
+                años_compra = df_limpio[df_limpio[columna_id] == cliente_id]['Año'].unique()
+                años_compra_str = ', '.join([str(año) for año in sorted(años_compra)])
 
-                    productos_unicos = sorted(set(todos_productos))
+                # Obtener productos únicos que compró este cliente
+                productos_cliente = df_limpio[df_limpio[columna_id] == cliente_id][columna_producto].dropna().unique()
+                productos_str = ', '.join(sorted(productos_cliente)) if len(productos_cliente) > 0 else 'Sin datos'
 
-                    # Crear diccionario con contador de clientes por producto
-                    contador_productos = {}
-                    for producto in productos_unicos:
-                        count = sum(1 for p in df_perdidos['Productos Comprados'] if producto in p)
-                        contador_productos[producto] = count
+                clientes_perdidos.append({
+                    'Código Cliente': cliente_id,
+                    'Nombre': datos_cliente[columna_nombre],
+                    'Productos Comprados': productos_str,
+                    'Correo': datos_cliente[columna_correo],
+                    'Teléfono 1': datos_cliente[columna_tel1],
+                    'Teléfono 2': datos_cliente[columna_tel2],
+                    'Placa': datos_cliente[columna_placa],
+                    'Años en que compró': años_compra_str
+                })
 
-                    # Crear opciones con contadores
-                    opciones_productos = ['Todos'] + [f"{prod} ({contador_productos[prod]} clientes)" for prod in productos_unicos]
+            df_perdidos = pd.DataFrame(clientes_perdidos)
 
-                    filtro_productos = st.multiselect(
-                        "Selecciona tipo(s) de producto (puedes escribir para buscar):",
-                        opciones_productos,
-                        default=['Todos'],
-                        help="Filtra clientes según los productos que compraron. Usa la búsqueda escribiendo parte del nombre."
-                    )
+            # FILTRO POST-ANÁLISIS: Filtrar por tipo de producto
+            st.subheader("🔍 Filtrar por Tipo de Producto")
 
-                    # Aplicar filtro de productos
-                    df_mostrar = df_perdidos.copy()
+            # Obtener todos los productos únicos de los clientes perdidos
+            todos_productos = []
+            for productos_str in df_perdidos['Productos Comprados']:
+                if productos_str != 'Sin datos':
+                    productos_list = [p.strip() for p in productos_str.split(',')]
+                    todos_productos.extend(productos_list)
 
-                    if 'Todos' not in filtro_productos and len(filtro_productos) > 0:
-                        # Extraer nombres de productos sin el contador
-                        productos_seleccionados = [p.rsplit(' (', 1)[0] for p in filtro_productos]
+            productos_unicos = sorted(set(todos_productos))
 
-                        # Filtrar DataFrame
-                        mask = df_mostrar['Productos Comprados'].apply(
-                            lambda x: any(prod in x for prod in productos_seleccionados)
-                        )
-                        df_mostrar = df_mostrar[mask]
+            # Crear diccionario con contador de clientes por producto
+            contador_productos = {}
+            for producto in productos_unicos:
+                count = sum(1 for p in df_perdidos['Productos Comprados'] if producto in p)
+                contador_productos[producto] = count
 
-                    # Mostrar información de filtrado
-                    if len(df_mostrar) < len(df_perdidos):
-                        st.info(f"📊 Mostrando **{len(df_mostrar)}** de **{len(df_perdidos)}** clientes")
-                    else:
-                        st.info(f"📊 Mostrando **{len(df_perdidos)}** clientes")
+            # Crear opciones con contadores
+            opciones_productos = ['Todos'] + [f"{prod} ({contador_productos[prod]} clientes)" for prod in productos_unicos]
 
-                    # Mostrar tabla
-                    st.dataframe(df_mostrar, use_container_width=True)
+            filtro_productos = st.multiselect(
+                "Selecciona tipo(s) de producto (puedes escribir para buscar):",
+                opciones_productos,
+                default=['Todos'],
+                help="Filtra clientes según los productos que compraron. Usa la búsqueda escribiendo parte del nombre."
+            )
 
-                    # Botón de descarga
-                    st.markdown("---")
-                    st.subheader("💾 Descargar Listado")
+            # Aplicar filtro de productos
+            df_mostrar = df_perdidos.copy()
 
-                    col1, col2 = st.columns(2)
+            if 'Todos' not in filtro_productos and len(filtro_productos) > 0:
+                # Extraer nombres de productos sin el contador
+                productos_seleccionados = [p.rsplit(' (', 1)[0] for p in filtro_productos]
 
-                    with col1:
-                        # Excel (con datos filtrados)
-                        output = io.BytesIO()
-                        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                            df_mostrar.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
-                        output.seek(0)
-                        st.download_button(
-                            label=f"📥 Descargar Excel ({len(df_mostrar)} clientes)",
-                            data=output,
-                            file_name=f"clientes_no_regresaron_{año_actual}.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
+                # Filtrar DataFrame
+                mask = df_mostrar['Productos Comprados'].apply(
+                    lambda x: any(prod in x for prod in productos_seleccionados)
+                )
+                df_mostrar = df_mostrar[mask]
 
-                    with col2:
-                        # CSV (con datos filtrados)
-                        csv = df_mostrar.to_csv(index=False, encoding='utf-8-sig')
-                        st.download_button(
-                            label=f"📥 Descargar CSV ({len(df_mostrar)} clientes)",
-                            data=csv,
-                            file_name=f"clientes_no_regresaron_{año_actual}.csv",
-                            mime="text/csv"
-                        )
+            # Mostrar información de filtrado
+            if len(df_mostrar) < len(df_perdidos):
+                st.info(f"📊 Mostrando **{len(df_mostrar)}** de **{len(df_perdidos)}** clientes")
+            else:
+                st.info(f"📊 Mostrando **{len(df_perdidos)}** clientes")
 
-                    st.success(f"✅ Análisis completado: {len(clientes_no_regresaron)} clientes no han regresado en {año_actual}")
-                else:
-                    st.success("🎉 Excelente! Todos los clientes anteriores han regresado en el año actual.")
+            # Mostrar tabla
+            st.dataframe(df_mostrar, use_container_width=True)
+
+            # Botón de descarga
+            st.markdown("---")
+            st.subheader("💾 Descargar Listado")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                # Excel (con datos filtrados)
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df_mostrar.to_excel(writer, sheet_name='Clientes No Regresaron', index=False)
+                output.seek(0)
+                st.download_button(
+                    label=f"📥 Descargar Excel ({len(df_mostrar)} clientes)",
+                    data=output,
+                    file_name=f"clientes_no_regresaron_{año_actual}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
+            with col2:
+                # CSV (con datos filtrados)
+                csv = df_mostrar.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label=f"📥 Descargar CSV ({len(df_mostrar)} clientes)",
+                    data=csv,
+                    file_name=f"clientes_no_regresaron_{año_actual}.csv",
+                    mime="text/csv"
+                )
+
+            st.success(f"✅ Análisis completado: {len(clientes_no_regresaron)} clientes no han regresado en {año_actual}")
+        else:
+            st.success("🎉 Excelente! Todos los clientes anteriores han regresado en el año actual.")
 
 
 # ============================================
