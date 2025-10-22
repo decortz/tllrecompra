@@ -506,7 +506,7 @@ def fidelizacion_clientes(df):
                 # Mostrar última fecha de actualización (del archivo completo)
                 columna_fecha_completa = df.columns[2]  # Columna C [2]
                 df_fechas = df.copy()
-                df_fechas[columna_fecha_completa] = pd.to_datetime(df_fechas[columna_fecha_completa], errors='coerce')
+                df_fechas[columna_fecha_completa] = pd.to_datetime(df_fechas[columna_fecha_completa], format='%d/%m/%Y', errors='coerce')
                 fecha_maxima = df_fechas[columna_fecha_completa].max()
 
                 meses = {
