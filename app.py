@@ -47,8 +47,8 @@ def temporalidad(df):
     df_temp = df.copy()
     df_temp['Año'] = df_temp[columna_fecha].dt.year
 
-    # Obtener el último año con datos
-    año_actual = int(df_temp['Año'].max())
+    # Usar el año real del sistema como año actual
+    año_actual = datetime.now().year
 
     # Calcular los 3 años anteriores
     años_anteriores = [año_actual - 1, año_actual - 2, año_actual - 3]
