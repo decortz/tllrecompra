@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import io
-
 # Configuración de la página
 st.set_page_config(
     page_title="Tasa Recompra TLL",
@@ -867,10 +866,9 @@ st.markdown("---")
 
 # ── FILTRO PRINCIPAL: AÑO DE REFERENCIA ──────────────────────────────────────
 st.header("📅 Año de Referencia")
-st.caption(
-    "Año de referencia (elige el año de referencia, la aplicación medirá desde el año "
-    "inmediatamente anterior y tres años para atrás. Ejemplo: si eliges 2026, la app "
-    "mostrará datos de 2025, 2024, y 2023)."
+st.markdown(
+    """Elige el año de referencia, la aplicación medirá desde el año inmediatamente anterior y tres años para atrás. 
+    Ejemplo: si eliges 2026, la app mostrará datos de 2025, 2024, y 2023)."""
 )
 
 año_actual = st.selectbox(
