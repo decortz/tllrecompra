@@ -31,42 +31,12 @@ def cargar_datos_desde_drive(file_id):
     except Exception as e:
         return None, str(e)
 
-def temporalidad(df):
-    """
-    Identifica el año actual (último año con datos) y los 3 años anteriores.
-
-    Args:
-        df: DataFrame con los datos de ventas (con fechas ya convertidas)
-
-    Returns:
-        dict: Diccionario con año_actual y lista de años_anteriores
-    """
-    columna_fecha = df.columns[2]  # Columna C [2]
-
-    # Obtener años (la fecha ya viene convertida desde cargar_datos_desde_drive)
-    df_temp = df.copy()
-    df_temp['Año'] = df_temp[columna_fecha].dt.year
-
-    # Usar el año real del sistema como año actual
-    año_actual = datetime.now().year
-
-    # Calcular los 3 años anteriores
-    años_anteriores = [año_actual - 1, año_actual - 2, año_actual - 3]
-
-    return {
-        'año_actual': año_actual,
-        'años_anteriores': años_anteriores,
-        'todos_años': [año_actual] + años_anteriores
-    }
-
-def analisis_recompra(df):
+def analisis_recompra(df, año_actual):
     """
     Función principal que realiza el análisis de recompra de los 3 años anteriores.
     Incluye filtros, procesamiento y visualización de datos.
     """
-    # Obtener temporalidad
-    temp = temporalidad(df)
-    años_anteriores = temp['años_anteriores']  # Los 3 años anteriores al actual
+    años_anteriores = [año_actual - 1, año_actual - 2, año_actual - 3]
     año_1, año_2, año_3 = años_anteriores[0], años_anteriores[1], años_anteriores[2]
 
     # SECCIÓN DE FILTROS
@@ -357,16 +327,13 @@ def analisis_recompra(df):
 
                 st.success("✅ Análisis completado exitosamente!")
 
-def fidelizacion_clientes(df):
+def fidelizacion_clientes(df, año_actual):
     """
     Función que identifica clientes que NO han regresado en el año actual
     pero que sí compraron en años anteriores.
     Incluye filtros y muestra análisis detallado por año.
     """
-    # Obtener temporalidad
-    temp = temporalidad(df)
-    año_actual = temp['año_actual']
-    años_anteriores = temp['años_anteriores']
+    años_anteriores = [año_actual - 1, año_actual - 2, año_actual - 3]
     año_1, año_2, año_3 = años_anteriores[0], años_anteriores[1], años_anteriores[2]
 
     st.header("🔄 Fidelización de Clientes")
@@ -896,14 +863,27 @@ if df is None:
 
 st.success(f"✅ Datos cargados correctamente: {len(df)} registros")
 
-# Mostrar información de temporalidad
-temp = temporalidad(df)
-st.info(f"📅 **Período de datos:** Año actual: **{temp['año_actual']}** | Años anteriores: **{temp['años_anteriores'][0]}, {temp['años_anteriores'][1]}, {temp['años_anteriores'][2]}**")
+st.markdown("---")
+
+# ── FILTRO PRINCIPAL: AÑO DE REFERENCIA ──────────────────────────────────────
+st.header("📅 Año de Referencia")
+st.caption(
+    "Año de referencia (elige el año de referencia, la aplicación medirá desde el año "
+    "inmediatamente anterior y tres años para atrás. Ejemplo: si eliges 2026, la app "
+    "mostrará datos de 2025, 2024, y 2023)."
+)
+
+año_actual = st.selectbox(
+    "Selecciona el año de referencia:",
+    options=list(range(datetime.now().year, datetime.now().year - 6, -1)),
+    index=0,
+    key='año_referencia'
+)
 
 st.markdown("---")
 
 # EJECUTAR LA FUNCIÓN SELECCIONADA
 if opcion == "📈 Análisis de Recompra":
-    analisis_recompra(df)
+    analisis_recompra(df, año_actual)
 else:  # Fidelización de Clientes
-    fidelizacion_clientes(df)
+    fidelizacion_clientes(df, año_actual)
